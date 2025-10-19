@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Almoxarifado Instalações</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="imagens/favicon.ico" type="image/x-icon">
+</head>
+<body>
+  <h1>Estoque de Materiais Beach Class</h1>
+
+  <input type="text" id="busca" placeholder="Buscar material...">
+
+  <p id="loading">Carregando tabela, por favor aguarde...</p>
+
+
+  <table id="tabela"></table>
+
+  <script>
+    const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtLljab6cvxEWkW_JxsWSSNTg02aOpBV5330gP12P_JaD8SkORWQdLZts18VqqpGLPsx-WMwbhcnvH/pub?gid=0&single=true&output=csv';
+
+    fetch(url)
+      .then(response => response.text())
+      .then(text => {
+        const linhas = text.trim().split('\n');
+        const tabela = document.getElementById('tabela');
+
+        linhas.forEach((linha, i) => {
+          const tr = document.createElement('tr');
+          linha.split(',').forEach(cel => {
+            const el = document.createElement(i === 0 ? 'th' : 'td');
+            el.textContent = cel;el.setAttribute('data-label', linhas[0].split(',')[linha.split(',').indexOf(cel)]);
+            tr.appendChild(el);
+          });
+          tabela.appendChild(tr);
+        });
+
+         // Esconder mensagem de loading
+        document.getElementById('loading').style.display = 'none';
+
+        // Campo de busca
+        const input = document.getElementById('busca');
+        input.addEventListener('keyup', () => {
+          const termo = input.value.toLowerCase();
+          const linhasTabela = tabela.getElementsByTagName('tr');
+          for (let i = 1; i < linhasTabela.length; i++) { // ignora cabeçalho
+            const celulas = linhasTabela[i].getElementsByTagName('td');
+            let corresponde = false;
+            for (let c = 0; c < celulas.length; c++) {
+              if (celulas[c].textContent.toLowerCase().includes(termo)) {
+                corresponde = true;
+                break;
+              }
+            }
+            linhasTabela[i].style.display = corresponde ? '' : 'none';
+          }
+        });
+      })
+      .catch(err => {
+        console.error('Erro ao carregar CSV:', err);
+        document.body.insertAdjacentHTML('beforeend', '<p>Falha ao carregar os dados.</p>');
+      });
+  </script>
+</body>
+</html>
+
+
+
+
